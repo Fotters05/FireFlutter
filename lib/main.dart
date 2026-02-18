@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'firebase_options.dart';
 import 'injection_container.dart' as di;
+import 'core/notification_service.dart';
 import 'features/auth/auth_bloc.dart';
 import 'features/auth/auth_pages.dart';
 import 'features/cars/car_bloc.dart';
-import 'features/cars/car_pages.dart';
+import 'features/cart/cart_bloc.dart';
+import 'features/user/user_home_page.dart';
+import 'features/admin/admin_home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +17,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await di.init();
+  await NotificationService().initialize();
   runApp(const MyApp());
 }
 
@@ -30,6 +34,9 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (_) => di.sl<CarBloc>(),
         ),
+        BlocProvider(
+          create: (_) => di.sl<CartBloc>(),
+        ),
       ],
       child: MaterialApp(
         title: 'Автосалон',
@@ -39,20 +46,35 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if (state is AuthLoading || state is AuthInitial) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
+        home: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            // Очищаем корзину при выходе или смене пользователя
+            if (state is AuthUnauthenticated) {
+              context.read<CartBloc>().add(ClearCartEvent());
             }
-            
-            if (state is AuthAuthenticated) {
-              return const CarsPage();
-            }
-            
-            return const SignInPage();
           },
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              if (state is AuthLoading || state is AuthInitial) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (state is AuthAuthenticated) {
+                // Загружаем автомобили при входе
+                context.read<CarBloc>().add(LoadCarsEvent(userId: state.user.uid));
+                
+                // Проверяем роль пользователя
+                if (state.user.role == 'admin') {
+                  return const AdminHomePage();
+                }
+                return const UserHomePage();
+              }
+
+              return const SignInPage();
+            },
+          ),
         ),
       ),
     );

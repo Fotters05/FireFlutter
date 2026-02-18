@@ -38,6 +38,15 @@ class SignUpEvent extends AuthEvent {
 
 class SignOutEvent extends AuthEvent {}
 
+class ResetPasswordEvent extends AuthEvent {
+  final String email;
+
+  const ResetPasswordEvent({required this.email});
+
+  @override
+  List<Object> get props => [email];
+}
+
 abstract class AuthState extends Equatable {
   const AuthState();
   @override
@@ -63,6 +72,13 @@ class AuthError extends AuthState {
   List<Object> get props => [message];
 }
 
+class AuthPasswordResetSent extends AuthState {
+  final String message;
+  const AuthPasswordResetSent({required this.message});
+  @override
+  List<Object> get props => [message];
+}
+
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
 
@@ -71,6 +87,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInEvent>(_onSignIn);
     on<SignUpEvent>(_onSignUp);
     on<SignOutEvent>(_onSignOut);
+    on<ResetPasswordEvent>(_onResetPassword);
   }
 
   Future<void> _onCheckAuthStatus(
@@ -131,6 +148,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthError(message: failure.message)),
       (_) => emit(AuthUnauthenticated()),
+    );
+  }
+
+  Future<void> _onResetPassword(
+    ResetPasswordEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await repository.resetPassword(email: event.email);
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (_) => emit(const AuthPasswordResetSent(
+          message: 'Письмо для сброса пароля отправлено на почту')),
     );
   }
 }

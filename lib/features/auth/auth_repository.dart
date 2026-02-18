@@ -18,6 +18,7 @@ abstract class AuthRepository {
 
   Future<Either<Failure, void>> signOut();
   Future<Either<Failure, UserEntity?>> getCurrentUser();
+  Future<Either<Failure, void>> resetPassword({required String email});
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -106,6 +107,16 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(UserModel.fromJson(userDoc.data()!));
     } catch (e) {
       return Left(AuthFailure('Ошибка получения пользователя: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resetPassword({required String email}) async {
+    try {
+      await firebaseAuth.sendPasswordResetEmail(email: email);
+      return const Right(null);
+    } catch (e) {
+      return Left(AuthFailure('Ошибка сброса пароля: $e'));
     }
   }
 }

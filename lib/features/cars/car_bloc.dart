@@ -6,7 +6,7 @@ import 'car_repository.dart';
 abstract class CarEvent extends Equatable {
   const CarEvent();
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class LoadCarsEvent extends CarEvent {
@@ -26,6 +26,8 @@ class AddCarEvent extends CarEvent {
   final String fuelType;
   final String transmission;
   final String userId;
+  final String? imageUrl;
+  final String? description;
 
   const AddCarEvent({
     required this.brand,
@@ -37,10 +39,12 @@ class AddCarEvent extends CarEvent {
     required this.fuelType,
     required this.transmission,
     required this.userId,
+    this.imageUrl,
+    this.description,
   });
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         brand,
         model,
         year,
@@ -49,7 +53,9 @@ class AddCarEvent extends CarEvent {
         color,
         fuelType,
         transmission,
-        userId
+        userId,
+        imageUrl,
+        description,
       ];
 }
 
@@ -125,6 +131,8 @@ class CarBloc extends Bloc<CarEvent, CarState> {
       fuelType: event.fuelType,
       transmission: event.transmission,
       userId: event.userId,
+      imageUrl: event.imageUrl,
+      description: event.description,
     );
     await result.fold(
       (failure) async => emit(CarError(message: failure.message)),

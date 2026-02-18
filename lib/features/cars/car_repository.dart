@@ -14,6 +14,8 @@ abstract class CarRepository {
     required String fuelType,
     required String transmission,
     required String userId,
+    String? imageUrl,
+    String? description,
   });
 
   Future<Either<Failure, List<CarEntity>>> getCars(String userId);
@@ -36,6 +38,8 @@ class CarRepositoryImpl implements CarRepository {
     required String fuelType,
     required String transmission,
     required String userId,
+    String? imageUrl,
+    String? description,
   }) async {
     try {
       final car = CarModel(
@@ -50,6 +54,8 @@ class CarRepositoryImpl implements CarRepository {
         transmission: transmission,
         userId: userId,
         createdAt: DateTime.now(),
+        imageUrl: imageUrl,
+        description: description ?? '',
       );
 
       await firestore.collection('cars').add(car.toJson());

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/notification_service.dart';
 import '../auth/auth_bloc.dart';
 import 'car_bloc.dart';
 
@@ -313,10 +314,13 @@ class _AddCarPageState extends State<AddCarPage> {
 
   void _addCar() {
     if (_formKey.currentState!.validate()) {
+      final brand = _brandController.text.trim();
+      final model = _modelController.text.trim();
+      
       context.read<CarBloc>().add(
             AddCarEvent(
-              brand: _brandController.text.trim(),
-              model: _modelController.text.trim(),
+              brand: brand,
+              model: model,
               year: int.parse(_yearController.text),
               mileage: int.parse(_mileageController.text),
               price: double.parse(_priceController.text),
@@ -326,6 +330,19 @@ class _AddCarPageState extends State<AddCarPage> {
               userId: widget.userId,
             ),
           );
+      
+      // Показываем уведомление
+      NotificationService().showCarAddedNotification(brand, model);
+      
+      // Показываем SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$brand $model добавлен'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      
       Navigator.pop(context);
     }
   }

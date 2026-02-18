@@ -13,6 +13,9 @@ class CarEntity extends Equatable {
   final String transmission;
   final String userId;
   final DateTime createdAt;
+  final String? imageUrl;
+  final String description;
+  final int stock;
 
   const CarEntity({
     required this.id,
@@ -26,10 +29,13 @@ class CarEntity extends Equatable {
     required this.transmission,
     required this.userId,
     required this.createdAt,
+    this.imageUrl,
+    this.description = '',
+    this.stock = 1,
   });
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         id,
         brand,
         model,
@@ -40,7 +46,10 @@ class CarEntity extends Equatable {
         fuelType,
         transmission,
         userId,
-        createdAt
+        createdAt,
+        imageUrl,
+        description,
+        stock,
       ];
 }
 
@@ -57,6 +66,9 @@ class CarModel extends CarEntity {
     required super.transmission,
     required super.userId,
     required super.createdAt,
+    super.imageUrl,
+    super.description = '',
+    super.stock = 1,
   });
 
   factory CarModel.fromJson(Map<String, dynamic> json, String id) {
@@ -72,6 +84,9 @@ class CarModel extends CarEntity {
       transmission: json['transmission'],
       userId: json['userId'],
       createdAt: (json['createdAt'] as Timestamp).toDate(),
+      imageUrl: json['imageUrl'],
+      description: json['description'] ?? '',
+      stock: json['stock'] ?? 1,
     );
   }
 
@@ -87,6 +102,9 @@ class CarModel extends CarEntity {
       'transmission': transmission,
       'userId': userId,
       'createdAt': Timestamp.fromDate(createdAt),
+      'imageUrl': imageUrl,
+      'description': description,
+      'stock': stock,
     };
   }
 }
